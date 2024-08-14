@@ -1,17 +1,11 @@
 namespace HotChocolate.Types;
 
-internal sealed class ErrorMiddleware
+internal sealed class ErrorMiddleware(FieldDelegate next, IReadOnlyList<CreateError> errorHandlers)
 {
-    private readonly FieldDelegate _next;
-    private readonly IReadOnlyList<CreateError> _errorHandlers;
-
-    public ErrorMiddleware(FieldDelegate next, IReadOnlyList<CreateError> errorHandlers)
-    {
-        _next = next ??
-            throw new ArgumentNullException(nameof(next));
-        _errorHandlers = errorHandlers ??
-            throw new ArgumentNullException(nameof(errorHandlers));
-    }
+    private readonly FieldDelegate _next = next ??
+        throw new ArgumentNullException(nameof(next));
+    private readonly IReadOnlyList<CreateError> _errorHandlers = errorHandlers ??
+        throw new ArgumentNullException(nameof(errorHandlers));
 
     public async ValueTask InvokeAsync(IMiddlewareContext context)
     {
@@ -44,7 +38,7 @@ internal sealed class ErrorMiddleware
 
                 if (!handled)
                 {
-                    unhandledErrors ??= new List<Exception>();
+                    unhandledErrors ??= [];
                     unhandledErrors.Add(exception);
                 }
             }
@@ -85,7 +79,7 @@ internal sealed class ErrorMiddleware
                 throw;
             }
 
-            context.SetScopedState(ErrorContextDataKeys.Errors, new[] { error });
+            context.SetScopedState(ErrorContextDataKeys.Errors, new[] { error, });
             context.Result = MarkerObjects.ErrorObject;
         }
     }

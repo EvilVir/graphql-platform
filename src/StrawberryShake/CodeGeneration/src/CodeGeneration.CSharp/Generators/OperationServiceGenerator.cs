@@ -47,6 +47,7 @@ public class OperationServiceGenerator : ClassBaseGenerator<OperationDescriptor>
 
         var classBuilder = ClassBuilder
             .New()
+            .SetAccessModifier(settings.AccessModifier)
             .SetComment(
                 XmlCommentBuilder
                     .New()
@@ -437,14 +438,14 @@ public class OperationServiceGenerator : ClassBaseGenerator<OperationDescriptor>
         var processed = new HashSet<string>();
         foreach (var argument in descriptor.Arguments)
         {
-            if (argument.Type.NamedType() is InputObjectTypeDescriptor { HasUpload: true } type)
+            if (argument.Type.NamedType() is InputObjectTypeDescriptor { HasUpload: true, } type)
             {
                 if (processed.Add(argument.Type.NamedType().Name))
                 {
                     AddMapFilesOfInputTypeMethod(classBuilder, type);
                 }
             }
-            else if (argument.Type.NamedType() is not ScalarTypeDescriptor { Name: "Upload" })
+            else if (argument.Type.NamedType() is not ScalarTypeDescriptor { Name: "Upload", })
             {
                 continue;
             }
@@ -508,7 +509,7 @@ public class OperationServiceGenerator : ClassBaseGenerator<OperationDescriptor>
         string variable)
     {
         var checkedVariable = variable + "_i";
-        if (typeReference is NonNullTypeDescriptor { InnerType: { } it })
+        if (typeReference is NonNullTypeDescriptor { InnerType: { } it, })
         {
             typeReference = it;
         }
@@ -517,7 +518,7 @@ public class OperationServiceGenerator : ClassBaseGenerator<OperationDescriptor>
 
         switch (typeReference)
         {
-            case ListTypeDescriptor { InnerType: { } lt }:
+            case ListTypeDescriptor { InnerType: { } lt, }:
             {
                 var innerVariable = variable + "_lt";
                 var innerPathVariable = pathVariable + "_lt";
@@ -541,7 +542,7 @@ public class OperationServiceGenerator : ClassBaseGenerator<OperationDescriptor>
 
                 break;
             }
-            case InputObjectTypeDescriptor { HasUpload: true, Name: { } inputTypeName }:
+            case InputObjectTypeDescriptor { HasUpload: true, Name: { } inputTypeName, }:
             {
                 result = MethodCallBuilder.New()
                     .SetMethodName("MapFilesFromType" + inputTypeName)
@@ -550,7 +551,7 @@ public class OperationServiceGenerator : ClassBaseGenerator<OperationDescriptor>
                     .AddArgument(_files);
                 break;
             }
-            case ScalarTypeDescriptor { Name: "Upload" }:
+            case ScalarTypeDescriptor { Name: "Upload", }:
             {
                 return CodeBlockBuilder.New()
                     .AddCode(

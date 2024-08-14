@@ -18,7 +18,7 @@ public static class SomeQuery
     [GraphQLType("CustomEnum")]
     public static ValueTask<object?> GetEnum() => default;
 
-    public static Book GetBook() => new() { Title = "SomeTitle" };
+    public static Book GetBook() => new() { Title = "SomeTitle", };
 
     public static Task<string> WithDataLoader(
         IFoosByIdDataLoader foosById,
@@ -102,6 +102,6 @@ public static class DataLoaderGen
     }
 }
 
-public class SomeService { }
+public class SomeService;
 
-public class GenericService<T> { }
+public class GenericService<T>;

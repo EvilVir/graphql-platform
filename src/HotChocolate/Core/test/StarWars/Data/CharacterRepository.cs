@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using HotChocolate.StarWars.Models;
 
 namespace HotChocolate.StarWars.Data;
@@ -22,6 +23,11 @@ public class CharacterRepository
             return _characters["1000"];
         }
         return _characters["2001"];
+    }
+
+    public ICharacter GetHeroByTraits(JsonElement traits)
+    {
+        return _characters.Values.FirstOrDefault(z => z.Traits?.ToString().Equals(traits.ToString()) == true);
     }
 
     public ICharacter GetCharacter(string id)
@@ -78,61 +84,67 @@ public class CharacterRepository
         {
             Id = "1000",
             Name = "Luke Skywalker",
-            Friends = new[] { "1002", "1003", "2000", "2001" },
-            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi },
-            HomePlanet = "Tatooine"
+            Friends = new[] { "1002", "1003", "2000", "2001", },
+            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi, },
+            HomePlanet = "Tatooine",
+            Traits = JsonSerializer.SerializeToElement(new { lastJedi = true, }),
         };
 
         yield return new Human
         {
             Id = "1001",
             Name = "Darth Vader",
-            Friends = new[] { "1004" },
-            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi },
-            HomePlanet = "Tatooine"
+            Friends = new[] { "1004", },
+            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi, },
+            HomePlanet = "Tatooine",
+            Traits = JsonSerializer.SerializeToElement(new { theChosenOne = true, }),
         };
 
         yield return new Human
         {
             Id = "1002",
             Name = "Han Solo",
-            Friends = new[] { "1000", "1003", "2001" },
-            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi }
+            Friends = new[] { "1000", "1003", "2001", },
+            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi, },
+            Traits = JsonSerializer.SerializeToElement(new { hanShot = "first", }),
         };
 
         yield return new Human
         {
             Id = "1003",
             Name = "Leia Organa",
-            Friends = new[] { "1000", "1002", "2000", "2001" },
-            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi },
-            HomePlanet = "Alderaan"
+            Friends = new[] { "1000", "1002", "2000", "2001", },
+            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi, },
+            HomePlanet = "Alderaan",
+            Traits = JsonSerializer.SerializeToElement(new { brother = "luke", }),
         };
 
         yield return new Human
         {
             Id = "1004",
             Name = "Wilhuff Tarkin",
-            Friends = new[] { "1001" },
-            AppearsIn = new[] { Episode.NewHope }
+            Friends = new[] { "1001", },
+            AppearsIn = new[] { Episode.NewHope, },
         };
 
         yield return new Droid
         {
             Id = "2000",
             Name = "C-3PO",
-            Friends = new[] { "1000", "1002", "1003", "2001" },
-            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi },
-            PrimaryFunction = "Protocol"
+            Friends = new[] { "1000", "1002", "1003", "2001", },
+            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi, },
+            PrimaryFunction = "Protocol",
+            Traits = JsonSerializer.SerializeToElement(new { annoying = true, }),
         };
 
         yield return new Droid
         {
             Id = "2001",
             Name = "R2-D2",
-            Friends = new[] { "1000", "1002", "1003" },
-            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi },
-            PrimaryFunction = "Astromech"
+            Friends = new[] { "1000", "1002", "1003", },
+            AppearsIn = new[] { Episode.NewHope, Episode.Empire, Episode.Jedi, },
+            PrimaryFunction = "Astromech",
+            Traits = JsonSerializer.SerializeToElement(new { rockets = true, }),
         };
     }
 

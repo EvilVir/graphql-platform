@@ -55,7 +55,7 @@ public class QueryableDefaultFieldHandler
         }
 
         Expression nestedProperty;
-        if (field.Metadata is ExpressionFilterMetadata { Expression: LambdaExpression expression })
+        if (field.Metadata is ExpressionFilterMetadata { Expression: LambdaExpression expression, })
         {
             if (expression.Parameters.Count != 1 ||
                 expression.Parameters[0].Type != context.RuntimeTypes.Peek()!.Source)
@@ -161,6 +161,8 @@ public class QueryableDefaultFieldHandler
             _parameter = parameter;
         }
 
+        protected override Expression VisitExtension(Expression node) => node.CanReduce ? base.VisitExtension(node) : node;
+
         protected override Expression VisitParameter(ParameterExpression node)
         {
             if (node == _parameter)
@@ -191,17 +193,17 @@ static file class LocalExtensions
 
     public static bool IsNullableValueType(this IExtendedType type)
     {
-        return type.GetTypeOrElementType() is { Type.IsValueType: true, IsNullable: true };
+        return type.GetTypeOrElementType() is { Type.IsValueType: true, IsNullable: true, };
     }
 
     public static bool IsValueType(this IExtendedType type)
     {
-        return type.GetTypeOrElementType() is { Type.IsValueType: true };
+        return type.GetTypeOrElementType() is { Type.IsValueType: true, };
     }
 
     private static IExtendedType GetTypeOrElementType(this IExtendedType type)
     {
-        while (type is { IsArrayOrList: true, ElementType: { } nextType })
+        while (type is { IsArrayOrList: true, ElementType: { } nextType, })
         {
             type = nextType;
         }

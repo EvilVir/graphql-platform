@@ -446,8 +446,8 @@ public class InputObjectTypeTests : TypeTestBase
         var executor = await new ServiceCollection()
             .AddGraphQL()
             .AddQueryType<QueryType>()
-            .AddTypeConverter<Baz, Bar>(from => new Bar { Text = from.Text })
-            .AddTypeConverter<Bar, Baz>(from => new Baz { Text = from.Text })
+            .AddTypeConverter<Baz, Bar>(from => new Bar { Text = from.Text, })
+            .AddTypeConverter<Bar, Baz>(from => new Baz { Text = from.Text, })
             .BuildRequestExecutorAsync();
 
         // act
@@ -821,7 +821,7 @@ public class InputObjectTypeTests : TypeTestBase
     public class SerializationInputObject2
     {
         public List<SerializationInputObject1?>? FooList { get; set; } =
-            new() { new SerializationInputObject1() };
+            [new SerializationInputObject1(),];
     }
 
     public class FooDirectiveType : DirectiveType<FooDirective>
@@ -836,7 +836,7 @@ public class InputObjectTypeTests : TypeTestBase
         }
     }
 
-    public class FooDirective { }
+    public class FooDirective;
 
     public class QueryType : ObjectType
     {
@@ -959,7 +959,15 @@ public class InputObjectTypeTests : TypeTestBase
         [DefaultValue(FooEnum.Bar)]
         public FooEnum Enum { get; set; }
 
+        [DefaultValueSyntax("[[{ foo: 1 } ]]")]
+        public List<List<ComplexInput>> ComplexInput { get; set; } = null!;
+
         public string? WithoutDefault { get; set; }
+    }
+
+    public class ComplexInput
+    {
+        public int Foo { get; set; }
     }
 
     public class InputWithDeprecatedField

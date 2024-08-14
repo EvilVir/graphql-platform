@@ -8,8 +8,8 @@ namespace HotChocolate.Language;
 // Implements the parsing rules in the Operations section.
 public ref partial struct Utf8GraphQLParser
 {
-    private static readonly List<VariableDefinitionNode> _emptyVariableDefinitions = new();
-    private static readonly List<ArgumentNode> _emptyArguments = new();
+    private static readonly List<VariableDefinitionNode> _emptyVariableDefinitions = [];
+    private static readonly List<ArgumentNode> _emptyArguments = [];
 
     /// <summary>
     /// Parses an operation definition.
@@ -230,6 +230,15 @@ public ref partial struct Utf8GraphQLParser
     /// </summary>
     private FieldNode ParseField()
     {
+        if (++_parsedFields > _maxAllowedFields)
+        {
+            throw new SyntaxException(
+                _reader,
+                string.Format(
+                    Utf8GraphQLParser_Start_MaxAllowedFieldsReached,
+                    _maxAllowedFields));
+        }
+
         var start = Start();
 
         var name = ParseName();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -60,11 +61,14 @@ public static class FilterExpressionBuilder
         Type genericType,
         object? parsedValue)
     {
+        var enumerableType = typeof(IEnumerable<>);
+        var enumerableGenericType = enumerableType.MakeGenericType(genericType);
+
         return Expression.Call(
             typeof(Enumerable),
             nameof(Enumerable.Contains),
-            new Type[] { genericType },
-            Expression.Constant(parsedValue),
+            [genericType,],
+            CreateParameter(parsedValue, enumerableGenericType),
             property);
     }
 
@@ -150,7 +154,7 @@ public static class FilterExpressionBuilder
         LambdaExpression lambda)
         => Expression.Call(
             _anyWithParameter.MakeGenericMethod(type),
-            new Expression[] { property, lambda });
+            [property, lambda,]);
 
     public static Expression Any(
         Type type,
@@ -158,7 +162,7 @@ public static class FilterExpressionBuilder
     {
         return Expression.Call(
             _anyMethod.MakeGenericMethod(type),
-            new Expression[] { property });
+            [property,]);
     }
 
     public static Expression All(
@@ -167,7 +171,7 @@ public static class FilterExpressionBuilder
         LambdaExpression lambda)
         => Expression.Call(
             _allMethod.MakeGenericMethod(type),
-            new Expression[] { property, lambda });
+            [property, lambda,]);
 
     public static Expression NotContains(
         Expression property,
@@ -192,5 +196,5 @@ public static class FilterExpressionBuilder
         => (Expression)_createAndConvert
             .MakeGenericMethod(type)
             .Invoke(null,
-                new[] { value })!;
+                [value,])!;
 }

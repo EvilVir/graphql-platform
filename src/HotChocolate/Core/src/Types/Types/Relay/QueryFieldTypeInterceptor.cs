@@ -14,7 +14,7 @@ namespace HotChocolate.Types.Relay;
 internal sealed class QueryFieldTypeInterceptor : TypeInterceptor
 {
     private const string _defaultFieldName = "query";
-    private readonly HashSet<string> _payloads = new();
+    private readonly HashSet<string> _payloads = [];
 
     private ITypeCompletionContext _context = default!;
     private ObjectType? _queryType;
@@ -23,7 +23,7 @@ internal sealed class QueryFieldTypeInterceptor : TypeInterceptor
 
     internal override void OnAfterResolveRootType(
         ITypeCompletionContext completionContext,
-        DefinitionBase definition,
+        ObjectTypeDefinition definition,
         OperationType operationType)
     {
         _context ??= completionContext;

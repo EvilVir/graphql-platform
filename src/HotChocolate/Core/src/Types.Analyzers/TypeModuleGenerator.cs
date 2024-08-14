@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Buffers;
+using System.Collections.Immutable;
 using HotChocolate.Types.Analyzers.Generators;
 using HotChocolate.Types.Analyzers.Inspectors;
 using Microsoft.CodeAnalysis;
@@ -10,30 +11,31 @@ namespace HotChocolate.Types.Analyzers;
 public class TypeModuleGenerator : IIncrementalGenerator
 {
     private static readonly ISyntaxInspector[] _inspectors =
-    {
+    [
         new TypeAttributeInspector(),
         new ClassBaseClassInspector(),
         new ModuleInspector(),
         new DataLoaderInspector(),
-        new DataLoaderDefaultsInspector()
-    };
+        new DataLoaderDefaultsInspector(),
+    ];
 
     private static readonly ISyntaxGenerator[] _generators =
-    {
+    [
         new ModuleGenerator(),
-        new DataLoaderGenerator()
-    };
+        new DataLoaderGenerator(),
+    ];
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(c => PostInitialization(c));
 
-        IncrementalValuesProvider<ISyntaxInfo> modulesAndTypes =
+        var modulesAndTypes =
             context.SyntaxProvider
                 .CreateSyntaxProvider(
                     predicate: static (s, _) => IsRelevant(s),
                     transform: TryGetModuleOrType)
-                .Where(static t => t is not null)!;
+                .Where(static t => t is not null)!
+                .WithComparer(SyntaxInfoComparer.Default);
 
         var valueProvider = context.CompilationProvider.Combine(modulesAndTypes.Collect());
 
@@ -57,13 +59,13 @@ public class TypeModuleGenerator : IIncrementalGenerator
             IsMethodWithAttribute(node);
 
     private static bool IsClassWithBaseClass(SyntaxNode node)
-        => node is ClassDeclarationSyntax { BaseList.Types.Count: > 0 };
+        => node is ClassDeclarationSyntax { BaseList.Types.Count: > 0, };
 
     private static bool IsTypeWithAttribute(SyntaxNode node)
-        => node is BaseTypeDeclarationSyntax { AttributeLists.Count: > 0 };
+        => node is BaseTypeDeclarationSyntax { AttributeLists.Count: > 0, };
 
     private static bool IsMethodWithAttribute(SyntaxNode node)
-        => node is MethodDeclarationSyntax { AttributeLists.Count: > 0 };
+        => node is MethodDeclarationSyntax { AttributeLists.Count: > 0, };
 
     private static bool IsAssemblyAttributeList(SyntaxNode node)
         => node is AttributeListSyntax;
@@ -88,47 +90,42 @@ public class TypeModuleGenerator : IIncrementalGenerator
         Compilation compilation,
         ImmutableArray<ISyntaxInfo> syntaxInfos)
     {
-        var all = syntaxInfos;
-        var batch = new HashSet<ISyntaxInfo>();
-
-        // unpack aggregates
-        for (var i = 0; i < all.Length; i++)
+        if (syntaxInfos.IsEmpty)
         {
-            var syntaxInfo = all[i];
-
-            if (syntaxInfo is AggregateInfo aggregate)
-            {
-                all = all.Remove(aggregate);
-                all = all.AddRange(aggregate.Items);
-            }
+            return;
         }
 
-        foreach (var syntaxGenerator in _generators)
-        {
-            // gather infos for current generator
-            for (var i = all.Length - 1; i >= 0; i--)
-            {
-                var syntaxInfo = all[i];
+        var buffer = ArrayPool<ISyntaxInfo>.Shared.Rent(syntaxInfos.Length * 2);
 
-                if (syntaxGenerator.Consume(syntaxInfo))
+        // prepare context
+        for (var i = syntaxInfos.Length - 1; i >= 0; i--)
+        {
+            buffer[i] = syntaxInfos[i];
+        }
+
+        var nodes = buffer.AsSpan().Slice(0, syntaxInfos.Length);
+        var batch = buffer.AsSpan().Slice(syntaxInfos.Length, syntaxInfos.Length);
+
+        foreach (var generator in _generators)
+        {
+            var next = 0;
+
+            // gather infos for current generator
+            foreach (var node in nodes)
+            {
+                if (generator.Consume(node))
                 {
-                    batch.Add(syntaxInfo);
+                    batch[next++] = node;
                 }
             }
 
             // generate
-            if (batch.Count > 0)
+            if (next > 0)
             {
-                syntaxGenerator.Generate(context, compilation, batch);
-            }
-
-            // reset context
-            batch.Clear();
-
-            if (all.IsEmpty)
-            {
-                break;
+                generator.Generate(context, compilation, batch.Slice(0, next));
             }
         }
+
+        ArrayPool<ISyntaxInfo>.Shared.Return(buffer);
     }
 }

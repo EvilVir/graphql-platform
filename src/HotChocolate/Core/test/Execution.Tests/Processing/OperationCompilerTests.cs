@@ -1,12 +1,11 @@
 using System.Text;
-using ChilliCream.Testing;
 using HotChocolate.Language;
 using HotChocolate.StarWars;
 using HotChocolate.Types;
 using HotChocolate.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Snapshooter.Xunit;
+using CookieCrumble;
 
 namespace HotChocolate.Execution.Processing;
 
@@ -324,7 +323,7 @@ public class OperationCompilerTests
             .Create();
 
         var document = Utf8GraphQLParser.Parse(
-            @"query foo($v: Boolean){
+            @"query foo($v: Boolean!){
                 hero(episode: EMPIRE) {
                     name
                     ... abc @include(if: $v)
@@ -363,7 +362,7 @@ public class OperationCompilerTests
             .Create();
 
         var document = Utf8GraphQLParser.Parse(
-            @"query foo($v: Boolean){
+            @"query foo($v: Boolean!){
                 hero(episode: EMPIRE) {
                     name @include(if: $v)
                     ... abc
@@ -403,7 +402,7 @@ public class OperationCompilerTests
             .Create();
 
         var document = Utf8GraphQLParser.Parse(
-            @"query foo($v: Boolean, $q: Boolean){
+            @"query foo($v: Boolean!, $q: Boolean!){
                 hero(episode: EMPIRE) {
                     name @include(if: $v)
                     ... abc @include(if: $q)
@@ -442,7 +441,7 @@ public class OperationCompilerTests
             .Create();
 
         var document = Utf8GraphQLParser.Parse(
-            @"query foo($v: Boolean){
+            @"query foo($v: Boolean!){
                 hero(episode: EMPIRE) {
                     name @include(if: $v)
                     ... abc
@@ -487,7 +486,7 @@ public class OperationCompilerTests
             .Create();
 
         var document = Utf8GraphQLParser.Parse(
-            @"query foo($v: Boolean) {
+            @"query foo($v: Boolean!) {
                 hero(episode: EMPIRE) @include(if: $v) {
                     name
                 }
@@ -608,7 +607,7 @@ public class OperationCompilerTests
             .Create();
 
         var document = Utf8GraphQLParser.Parse(
-            @"query foo($v: Boolean, $q: Boolean) {
+            @"query foo($v: Boolean!, $q: Boolean!) {
                 hero(episode: EMPIRE) @include(if: $v) {
                     name @include(if: $q)
                 }
@@ -653,7 +652,7 @@ public class OperationCompilerTests
             .Create();
 
         var document = Utf8GraphQLParser.Parse(
-            @"query foo($v: Boolean, $q: Boolean) {
+            @"query foo($v: Boolean!, $q: Boolean!) {
                 hero(episode: EMPIRE) @include(if: $v) {
                     name @include(if: $q)
                 }
@@ -1149,6 +1148,89 @@ public class OperationCompilerTests
         MatchSnapshot(document, operation);
     }
 
+     [Fact]
+    public async Task Resolve_Concrete_Types_From_Unions()
+    {
+        // arrange
+        var schema =
+            await new ServiceCollection()
+                .AddGraphQLServer()
+                .AddQueryType<UnionQuery>()
+                .AddType<TypeOne>()
+                .AddType<TypeTwo>()
+                .UseField(next => next)
+                .BuildSchemaAsync();
+
+        var document = Utf8GraphQLParser.Parse(
+            """
+            query QueryName {
+              oneOrTwo {
+                ...TypeOneParts
+                ...TypeTwoParts
+              }
+            }
+
+            fragment TypeOneParts on TypeOne {
+              field1 { name }
+            }
+
+            fragment TypeTwoParts on TypeTwo {
+              field1 { name }
+            }
+            """);
+
+        var operationDefinition = document.Definitions.OfType<OperationDefinitionNode>().Single();
+
+        // act
+        var compiler = new OperationCompiler(new InputParser());
+        var operation = compiler.Compile(
+            "opid",
+            operationDefinition,
+            schema.QueryType,
+            document,
+            schema);
+
+        // assert
+        MatchSnapshot(document, operation);
+    }
+
+    [Fact]
+    public async Task Resolve_Concrete_Types_From_Unions_Execute()
+    {
+        // arrange
+        var executor =
+            await new ServiceCollection()
+                .AddGraphQLServer()
+                .AddQueryType<UnionQuery>()
+                .AddType<TypeOne>()
+                .AddType<TypeTwo>()
+                .BuildRequestExecutorAsync();
+
+        var document = Utf8GraphQLParser.Parse(
+            """
+            query QueryName {
+              oneOrTwo {
+                ...TypeOneParts
+                ...TypeTwoParts
+              }
+            }
+
+            fragment TypeOneParts on TypeOne {
+              field1 { name }
+            }
+
+            fragment TypeTwoParts on TypeTwo {
+              field1 { name }
+            }
+            """);
+
+        // act
+        var result = await executor.ExecuteAsync(builder => builder.SetQuery(document));
+
+        // assert
+        result.MatchSnapshot();
+    }
+
     private static void MatchSnapshot(DocumentNode original, IOperation compiled)
     {
         var sb = new StringBuilder();
@@ -1162,14 +1244,14 @@ public class OperationCompilerTests
 
     public class Foo
     {
-        public Bar Bar => new Bar();
+        public Bar Bar => new();
     }
 
     public class Bar
     {
         public string Text => "Bar";
 
-        public Baz Baz => new Baz();
+        public Baz Baz => new();
     }
 
     public class Baz
@@ -1181,7 +1263,7 @@ public class OperationCompilerTests
     {
         public void OptimizeSelectionSet(SelectionSetOptimizerContext context)
         {
-            if (context.Path is { Name: "bar" })
+            if (context.Path is { Name: "bar", })
             {
                 var baz = context.Type.Fields["baz"];
                 var bazSelection = Utf8GraphQLParser.Syntax.ParseField("baz { text }");
@@ -1200,5 +1282,33 @@ public class OperationCompilerTests
                 context.AddSelection(compiledSelection);
             }
         }
+    }
+
+    public class UnionQuery
+    {
+        public IOneOrTwo OneOrTwo() => new TypeOne();
+    }
+
+    public class TypeOne : IOneOrTwo
+    {
+        public FieldOne1 Field1 => new();
+    }
+
+    public class TypeTwo : IOneOrTwo
+    {
+        public FieldTwo1 Field1 => new();
+    }
+
+    [UnionType]
+    public interface IOneOrTwo;
+
+    public class FieldOne1
+    {
+        public string Name => "Name";
+    }
+
+    public class FieldTwo1
+    {
+        public string Name => "Name";
     }
 }

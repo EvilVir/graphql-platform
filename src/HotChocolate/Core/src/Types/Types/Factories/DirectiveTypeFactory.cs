@@ -87,6 +87,10 @@ internal sealed class DirectiveTypeFactory
                 Language.DirectiveLocation.InputFieldDefinition,
                 DirectiveLocation.InputFieldDefinition
             },
+            {
+                Language.DirectiveLocation.VariableDefinition,
+                DirectiveLocation.VariableDefinition
+            }
         };
 
     public DirectiveType Create(IDescriptorContext context, DirectiveDefinitionNode node)
@@ -132,7 +136,7 @@ internal sealed class DirectiveTypeFactory
                 argumentDefinition.SyntaxNode = argument;
             }
 
-            if (argument.DeprecationReason() is { Length: > 0 } reason)
+            if (argument.DeprecationReason() is { Length: > 0, } reason)
             {
                 argumentDefinition.DeprecationReason = reason;
             }

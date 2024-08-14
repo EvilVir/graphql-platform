@@ -1,11 +1,13 @@
 using CookieCrumble;
+using HotChocolate.Data.Filters;
 using HotChocolate.Execution;
 
-namespace HotChocolate.Data.Filters;
+namespace HotChocolate.Data;
 
-public class FilteringAndPaging : IClassFixture<SchemaCache>
+[Collection(SchemaCacheCollectionFixture.DefinitionName)]
+public class FilteringAndPaging
 {
-    private static readonly Foo[] _fooEntities = { new() { Bar = true }, new() { Bar = false } };
+    private static readonly Foo[] _fooEntities = [new() { Bar = true, }, new() { Bar = false, },];
 
     private readonly SchemaCache _cache;
 

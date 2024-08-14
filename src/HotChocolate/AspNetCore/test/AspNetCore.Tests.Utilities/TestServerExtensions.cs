@@ -25,7 +25,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound };
+            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, };
         }
 
         var json = await response.Content.ReadAsStringAsync();
@@ -48,7 +48,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new[] { new ClientQueryResult { StatusCode = HttpStatusCode.NotFound } };
+            return new[] { new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, }, };
         }
 
         var stream = await response.Content.ReadAsStreamAsync();
@@ -59,6 +59,7 @@ public static class TestServerExtensions
         do
         {
             section = await reader.ReadNextSectionAsync();
+
             if (section is not null)
             {
                 await using (section.Body)
@@ -74,8 +75,7 @@ public static class TestServerExtensions
                     result.Add(item);
                 }
             }
-        }
-        while (section is not null);
+        } while (section is not null);
 
         return result;
     }
@@ -96,7 +96,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new[] { new ClientQueryResult { StatusCode = HttpStatusCode.NotFound } };
+            return new[] { new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, }, };
         }
 
         var json = await response.Content.ReadAsStringAsync();
@@ -111,6 +111,7 @@ public static class TestServerExtensions
             do
             {
                 section = await reader.ReadNextSectionAsync();
+
                 if (section is not null)
                 {
                     await using (section.Body)
@@ -126,8 +127,7 @@ public static class TestServerExtensions
                         result.Add(item);
                     }
                 }
-            }
-            while (section is not null);
+            } while (section is not null);
 
             return result;
         }
@@ -136,7 +136,7 @@ public static class TestServerExtensions
             var result = JsonConvert.DeserializeObject<ClientQueryResult>(json)!;
             result.StatusCode = response.StatusCode;
             result.ContentType = response.Content.Headers.ContentType?.ToString();
-            return new[] { result };
+            return new[] { result, };
         }
     }
 
@@ -153,7 +153,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound };
+            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, };
         }
 
         var json = await response.Content.ReadAsStringAsync();
@@ -176,7 +176,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound };
+            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, };
         }
 
         var json = await response.Content.ReadAsStringAsync();
@@ -201,14 +201,14 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new ClientRawResult { StatusCode = HttpStatusCode.NotFound };
+            return new ClientRawResult { StatusCode = HttpStatusCode.NotFound, };
         }
 
         return new ClientRawResult
         {
             StatusCode = response.StatusCode,
             ContentType = response.Content.Headers.ContentType!.ToString(),
-            Content = await response.Content.ReadAsStringAsync()
+            Content = await response.Content.ReadAsStringAsync(),
         };
     }
 
@@ -238,7 +238,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound };
+            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, };
         }
 
         var json = await response.Content.ReadAsStringAsync();
@@ -262,7 +262,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound };
+            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, };
         }
 
         var json = await response.Content.ReadAsStringAsync();
@@ -289,7 +289,7 @@ public static class TestServerExtensions
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound };
+            return new ClientQueryResult { StatusCode = HttpStatusCode.NotFound, };
         }
 
         var json = await response.Content.ReadAsStringAsync();
@@ -300,7 +300,8 @@ public static class TestServerExtensions
     }
 
     public static Task<HttpResponseMessage> SendMultipartRequestAsync(
-        this TestServer testServer, MultipartFormDataContent content,
+        this TestServer testServer,
+        MultipartFormDataContent content,
         string path)
     {
         return testServer.CreateClient().PostAsync(CreateUrl(path), content);
@@ -359,8 +360,12 @@ public static class TestServerExtensions
     public static Task<HttpResponseMessage> SendGetRequestAsync(
         this TestServer testServer,
         string query,
-        string? path = null) =>
-        testServer.CreateClient().GetAsync($"{CreateUrl(path)}/?{query}");
+        string? path = null)
+    {
+        var message = new HttpRequestMessage(HttpMethod.Get, $"{CreateUrl(path)}/?{query}");
+        message.Headers.Add(HttpHeaderKeys.Preflight, "1");
+        return testServer.CreateClient().SendAsync(message);
+    }
 
     public static string CreateUrl(string? path)
     {

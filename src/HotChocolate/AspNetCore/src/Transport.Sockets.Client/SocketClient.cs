@@ -3,9 +3,9 @@ using System.Buffers;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using HotChocolate.Transport.Sockets.Client.Helpers;
 using HotChocolate.Transport.Sockets.Client.Protocols;
 using HotChocolate.Transport.Sockets.Client.Protocols.GraphQLOverWebSocket;
+using HotChocolate.Utilities;
 using static HotChocolate.Transport.Sockets.SocketDefaults;
 
 namespace HotChocolate.Transport.Sockets.Client;
@@ -13,9 +13,9 @@ namespace HotChocolate.Transport.Sockets.Client;
 public sealed class SocketClient : ISocket
 {
     private static readonly IProtocolHandler[] _protocolHandlers =
-    {
-        new GraphQLOverWebSocketProtocolHandler()
-    };
+    [
+        new GraphQLOverWebSocketProtocolHandler(),
+    ];
 
     private readonly CancellationTokenSource _cts = new();
     private readonly CancellationToken _ct;

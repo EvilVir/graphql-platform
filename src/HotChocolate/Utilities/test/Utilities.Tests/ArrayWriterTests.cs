@@ -178,7 +178,7 @@ public class ArrayWriterTests
     {
         // Arrange
         using var writer = new ArrayWriter();
-        var testData = new byte[] { 1, 2, 3, 4 };
+        var testData = new byte[] { 1, 2, 3, 4, };
 
         // Act
         var span = writer.GetSpan(4);
@@ -196,7 +196,7 @@ public class ArrayWriterTests
     {
         // Arrange
         using var writer = new ArrayWriter();
-        var testData = new byte[] { 1, 2, 3, 4 };
+        var testData = new byte[] { 1, 2, 3, 4, };
 
         // Act
         var memory = writer.GetMemory(4);
@@ -233,5 +233,33 @@ public class ArrayWriterTests
         Assert.Equal(1024, writer.Length);
         var writtenSpan = writer.GetWrittenSpan();
         Assert.True(testData.SequenceEqual(writtenSpan.ToArray()));
+    }
+
+    [Fact]
+    public void ShouldAllocateSufficientMemory()
+    {
+        // Arrange
+        using var writer = new ArrayWriter();
+
+        // Act
+        // NB: ask for 0x3000 bytes because the initial 512 bytes buffer size is added
+        // to request when doubling is insufficient and ArrayPool<byte> sizes are powers of 2
+        writer.GetSpan (0x3000) ;
+        writer.Advance (0x2000) ;
+        writer.GetSpan (0x7000) ;
+    }
+
+    [Fact]
+    public void ShouldResetCapacity()
+    {
+        // Arrange
+        using var writer = new ArrayWriter();
+
+        // Act
+        writer.GetSpan(1000);
+        writer.Advance(1000);
+        writer.Reset();
+        writer.GetSpan(2000);
+        writer.Advance(2000);
     }
 }

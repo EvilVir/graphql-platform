@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HotChocolate.Configuration;
+using HotChocolate.Language;
 using HotChocolate.Types;
 using HotChocolate.Types.Descriptors.Definitions;
 using static HotChocolate.Data.Projections.ProjectionConvention;
@@ -9,12 +10,25 @@ namespace HotChocolate.Data.Projections;
 
 internal sealed class ProjectionTypeInterceptor : TypeInterceptor
 {
+    private ITypeCompletionContext? _queryContext;
+    
+    internal override void OnAfterResolveRootType(
+        ITypeCompletionContext completionContext,
+        ObjectTypeDefinition definition,
+        OperationType operationType)
+    {
+        if (operationType is OperationType.Query)
+        {
+            _queryContext = completionContext;
+        }
+    }
+
     public override void OnAfterCompleteType(
         ITypeCompletionContext completionContext,
         DefinitionBase definition)
     {
-        if ((completionContext.IsQueryType ?? false) &&
-            completionContext.Type is ObjectType { Fields: var fields })
+        if (ReferenceEquals(completionContext, _queryContext) &&
+            completionContext.Type is ObjectType { Fields: var fields, })
         {
             var foundNode = false;
             var foundNodes = false;
@@ -58,7 +72,7 @@ internal sealed class ProjectionTypeInterceptor : TypeInterceptor
             List<string>? alwaysProjected = null;
             foreach (var field in objectTypeDefinition.Fields)
             {
-                alwaysProjected ??= new List<string>();
+                alwaysProjected ??= [];
                 if (field.GetContextData().TryGetValue(IsProjectedKey, out var value) &&
                     value is true)
                 {

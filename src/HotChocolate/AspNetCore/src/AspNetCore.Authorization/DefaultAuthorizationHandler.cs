@@ -129,7 +129,7 @@ internal sealed class DefaultAuthorizationHandler : IAuthorizationHandler
         bool authenticated,
         object context)
     {
-        var checkRoles = roles is { Count: > 0 };
+        var checkRoles = roles is { Count: > 0, };
         var checkPolicy = !string.IsNullOrWhiteSpace(policyName);
 
         // if the current directive has neither roles nor policies specified we will check if there
@@ -166,7 +166,7 @@ internal sealed class DefaultAuthorizationHandler : IAuthorizationHandler
 
             // If a policy name was supplied we will try to resolve the policy
             // and authorize with it.
-            var policy = await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false);
+            var policy = await _policyProvider.GetPolicyAsync(policyName!).ConfigureAwait(false);
 
             if (policy is null)
             {

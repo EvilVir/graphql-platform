@@ -731,7 +731,7 @@ public class DocumentValidatorTests
                 }));
 
         document = document.WithDefinitions(
-            new List<IDefinitionNode>(document.Definitions.Skip(1)) { operationWithDuplicates });
+            new List<IDefinitionNode>(document.Definitions.Skip(1)) { operationWithDuplicates, });
 
         var services = new ServiceCollection()
             .AddValidation()
@@ -898,7 +898,7 @@ public class DocumentValidatorTests
         // arrange
         schema ??= ValidationUtils.CreateSchema();
         validator ??= CreateValidator();
-        var query = Utf8GraphQLParser.Parse(sourceText);
+        var query = Utf8GraphQLParser.Parse(sourceText, new ParserOptions(maxAllowedFields: int.MaxValue));
 
         // act
         var result = await validator.ValidateAsync(

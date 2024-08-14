@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
+using System.Threading.Tasks;
 using HotChocolate.Resolvers;
 using HotChocolate.Types.Descriptors.Definitions;
 
@@ -44,7 +46,8 @@ public static class JsonObjectTypeExtensions
 
                     if (type.IsListType())
                     {
-                        throw ThrowHelper.CannotInferTypeFromJsonObj(ctx.Type.Name);
+                        InferListResolver(def);
+                        return;
                     }
 
                     if (namedType is ScalarType scalarType)
@@ -98,6 +101,11 @@ public static class JsonObjectTypeExtensions
         return descriptor;
     }
 
+    internal static void InferListResolver(ObjectFieldDefinition def)
+    {
+        def.PureResolver = ctx => new ValueTask<object?>(ctx.ToEnumerable());
+    }
+
     internal static void InferResolver(
         ITypeSystemObject type,
         ObjectFieldDefinition def,
@@ -116,7 +124,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetBoolean();
                 };
@@ -127,7 +135,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetInt16();
                 };
@@ -138,7 +146,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetInt32();
                 };
@@ -149,7 +157,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetUInt64();
                 };
@@ -160,7 +168,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetDouble();
                 };
@@ -171,7 +179,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetDecimal();
                 };
@@ -182,7 +190,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    if (property is null or { ValueKind: JsonValueKind.Null })
+                    if (property is null or { ValueKind: JsonValueKind.Null, })
                     {
                         return null;
                     }
@@ -196,7 +204,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetGuid();
                 };
@@ -207,7 +215,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetByte();
                 };
@@ -218,7 +226,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetBytesFromBase64();
                 };
@@ -229,7 +237,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    if (property is null or { ValueKind: JsonValueKind.Null })
+                    if (property is null or { ValueKind: JsonValueKind.Null, })
                     {
                         return null;
                     }
@@ -246,7 +254,7 @@ public static class JsonObjectTypeExtensions
                 {
                     var property = ctx.GetProperty(propertyName);
 
-                    return property is null or { ValueKind: JsonValueKind.Null }
+                    return property is null or { ValueKind: JsonValueKind.Null, }
                         ? null
                         : property.Value.GetDateTimeOffset();
                 };
@@ -256,6 +264,9 @@ public static class JsonObjectTypeExtensions
                 throw ThrowHelper.CannotInferTypeFromJsonObj(type.Name);
         }
     }
+
+    private static IEnumerable<JsonElement> ToEnumerable(this IPureResolverContext context)
+        => context.Parent<JsonElement>().EnumerateArray();
 
     private static JsonElement? GetProperty(this IPureResolverContext context, string propertyName)
         => context.Parent<JsonElement>().TryGetProperty(propertyName, out var element)

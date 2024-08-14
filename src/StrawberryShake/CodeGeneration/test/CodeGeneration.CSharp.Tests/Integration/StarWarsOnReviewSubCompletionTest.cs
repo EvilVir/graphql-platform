@@ -42,7 +42,7 @@ namespace StrawberryShake.CodeGeneration.CSharp.Integration.StarWarsOnReviewSubC
 
             var sub = client.OnReviewSub.Watch();
             var session = sub.Subscribe(
-                result => commentary = result.Data?.OnReview?.Commentary,
+                result => commentary = result.Data?.OnReview.Commentary,
                 () => completionTriggered = true);
 
             var topic = Episode.NewHope;
@@ -53,7 +53,7 @@ namespace StrawberryShake.CodeGeneration.CSharp.Integration.StarWarsOnReviewSubC
             {
                 await topicEventSender.SendAsync(
                     $"{OnReview}_{topic}",
-                    new Review { Stars = 1, Commentary = "Commentary" });
+                    new Review { Stars = 1, Commentary = "Commentary", });
                 await Task.Delay(1_000);
             }
 
@@ -67,7 +67,8 @@ namespace StrawberryShake.CodeGeneration.CSharp.Integration.StarWarsOnReviewSubC
             }
 
             // assert
-            Assert.True(commentary is not null && completionTriggered);
+            Assert.True(completionTriggered);
+            Assert.NotNull(commentary);
 
             session.Dispose();
         }
@@ -111,7 +112,7 @@ namespace StrawberryShake.CodeGeneration.CSharp.Integration.StarWarsOnReviewSubC
             {
                 await topicEventSender.SendAsync(
                     $"{OnReview}_{topic}",
-                    new Review { Stars = 1, Commentary = "Commentary" });
+                    new Review { Stars = 1, Commentary = "Commentary", });
                 await Task.Delay(1_000);
             }
 

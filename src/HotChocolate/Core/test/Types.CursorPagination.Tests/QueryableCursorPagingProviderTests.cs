@@ -11,7 +11,6 @@ using HotChocolate.Execution.Processing;
 using HotChocolate.Language;
 using HotChocolate.Resolvers;
 using HotChocolate.Types.Descriptors;
-using Xunit;
 
 #nullable  enable
 
@@ -29,7 +28,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(2);
         var context = new MockContext(pagingDetails);
@@ -70,7 +69,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "f", "g" };
+        var list = new List<string> { "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(last: 1);
         var context = new MockContext(pagingDetails);
@@ -105,7 +104,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(last: 2);
         var context = new MockContext(pagingDetails);
@@ -145,7 +144,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments();
         var context = new MockContext(pagingDetails);
@@ -189,7 +188,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(first: 5);
         var context = new MockContext(pagingDetails);
@@ -233,7 +232,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(first: 5);
         var context = new MockContext(pagingDetails);
@@ -255,7 +254,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(first: 7);
         var context = new MockContext(pagingDetails);
@@ -277,7 +276,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(first: 1);
         var context = new MockContext(pagingDetails);
@@ -303,7 +302,7 @@ public class QueryableCursorPagingProviderTests
         IPagingProvider pagingProvider = new QueryableCursorPagingProvider();
         var pagingHandler = pagingProvider.CreateHandler(sourceType, default);
 
-        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g" };
+        var list = new List<string> { "a", "b", "c", "d", "e", "f", "g", };
 
         var pagingDetails = new CursorPagingArguments(first: 1);
         var context = new MockContext(pagingDetails);
@@ -575,7 +574,12 @@ public class QueryableCursorPagingProviderTests
             throw new NotImplementedException();
         }
 
-        public T Service<T>()
+        public T Service<T>() where T : notnull
+        {
+            throw new NotImplementedException();
+        }
+
+        public T? Service<T>(object key) where T : notnull
         {
             throw new NotImplementedException();
         }

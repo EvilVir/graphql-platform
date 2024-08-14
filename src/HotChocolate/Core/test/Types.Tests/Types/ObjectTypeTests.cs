@@ -1437,7 +1437,7 @@ public class ObjectTypeTests : TypeTestBase
 
         // assert
         Assert.Throws<SchemaException>(Action)
-            .Errors.Select(t => new { t.Message, t.Code })
+            .Errors.Select(t => new { t.Message, t.Code, })
             .MatchSnapshot();
     }
 
@@ -1507,7 +1507,7 @@ public class ObjectTypeTests : TypeTestBase
                 .SetQuery("{ bar baz }")
                 .SetGlobalState(
                     InitialValue,
-                    new FooStruct { Qux = "Qux_Value", Baz = "Baz_Value" })
+                    new FooStruct { Qux = "Qux_Value", Baz = "Baz_Value", })
                 .Create());
 
         // assert
@@ -1524,11 +1524,7 @@ public class ObjectTypeTests : TypeTestBase
             .Create();
 
         // assert
-#if NETCOREAPP2_1
-            schema.ToString().MatchSnapshot(new SnapshotNameExtension("NETCOREAPP2_1"));
-#else
         schema.ToString().MatchSnapshot();
-#endif
     }
 
     [Fact]
@@ -1541,11 +1537,7 @@ public class ObjectTypeTests : TypeTestBase
             .Create();
 
         // assert
-#if NETCOREAPP2_1
-            schema.ToString().MatchSnapshot(new SnapshotNameExtension("NETCOREAPP2_1"));
-#else
         schema.ToString().MatchSnapshot();
-#endif
     }
 
     [Fact]
@@ -1571,11 +1563,7 @@ public class ObjectTypeTests : TypeTestBase
             .Create();
 
         // assert
-#if NETCOREAPP2_1
-            schema.ToString().MatchSnapshot(new SnapshotNameExtension("NETCOREAPP2_1"));
-#else
         schema.ToString().MatchSnapshot();
-#endif
     }
 
     [Fact]
@@ -2074,7 +2062,7 @@ public class ObjectTypeTests : TypeTestBase
     {
         // arrange
         // act
-        var schema =
+        async Task Error() =>
             await new ServiceCollection()
                 .AddGraphQL()
                 .AddQueryType<WithStaticField>()
@@ -2082,23 +2070,7 @@ public class ObjectTypeTests : TypeTestBase
                 .BuildSchemaAsync();
 
         // assert
-        SnapshotExtensions.MatchSnapshot(schema);
-    }
-
-    [Fact]
-    public async Task Static_Field_Inference_3_Execute()
-    {
-        // arrange
-        // act
-        var result =
-            await new ServiceCollection()
-                .AddGraphQL()
-                .AddQueryType<WithStaticField>()
-                .ModifyOptions(o => o.DefaultBindingBehavior = BindingBehavior.Explicit)
-                .ExecuteRequestAsync("{ hello }");
-
-        // assert
-        SnapshotExtensions.MatchSnapshot(result);
+        await Assert.ThrowsAsync<SchemaException>(Error);
     }
 
     [Fact]
@@ -2206,6 +2178,18 @@ public class ObjectTypeTests : TypeTestBase
 
         Assert.IsType<SchemaException>(ex);
         Assert.Contains("non-abstract type is required", ex.Message);
+    }
+
+    [Fact]
+    public async Task Ignore_Generic_Methods()
+    {
+        var schema =
+            await new ServiceCollection()
+                .AddGraphQL()
+                .AddQueryType<QueryWithGenerics>()
+                .BuildSchemaAsync();
+
+        SnapshotExtensions.MatchSnapshot(schema);
     }
 
     public abstract class ResolverBase
@@ -2340,7 +2324,7 @@ public class ObjectTypeTests : TypeTestBase
     }
 
     public class MyList
-        : MyListBase { }
+        : MyListBase;
 
     public class MyListBase
         : IQueryable<Bar>
@@ -2395,7 +2379,7 @@ public class ObjectTypeTests : TypeTestBase
     public class QueryWithNestedList
     {
         public List<List<FooIgnore>> FooMatrix =>
-            new() { new() { new() } };
+            [[new(),],];
     }
 
     public class ResolveWithQuery
@@ -2529,5 +2513,12 @@ public class ObjectTypeTests : TypeTestBase
         public string Title { get; set; } = default!;
 
         public static bool IsComic => true;
+    }
+
+    public class QueryWithGenerics
+    {
+        public string Bar() => "bar";
+
+        public T Foo<T>() => default!;
     }
 }

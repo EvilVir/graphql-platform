@@ -38,7 +38,7 @@ public class ExtendedTypeTests
             typeof(NativeType<List<byte?>>),
             _cache);
         list = ExtendedType.Tools.ChangeNullability(
-            list, new bool?[] { false }, _cache);
+            list, new bool?[] { false, }, _cache);
 
         var nullableList = ExtendedType.FromType(
             typeof(List<byte?>),
@@ -338,7 +338,7 @@ public class ExtendedTypeTests
         // act
         IExtendedType list = ExtendedType.FromType(listType, _cache);
         list = ExtendedType.Tools.ChangeNullability(
-            list, new bool?[] { null, false }, _cache);
+            list, new bool?[] { null, false, }, _cache);
 
         // assert
         Assert.False(list.ElementType!.IsNullable);
@@ -388,6 +388,19 @@ public class ExtendedTypeTests
         Assert.True(dict.IsArrayOrList);
     }
 
+    [Fact]
+    public void Nested_Nullability()
+    {
+        // arrange
+        // act
+        var extendedType = ExtendedType.FromMember(
+            typeof(Nullability).GetMember("NestedProp").Single(),
+            _cache);
+
+        // assert
+        Assert.True(extendedType.IsNullable);
+    }
+
     private sealed class CustomStringList1
         : List<string>
     {
@@ -415,6 +428,13 @@ public class ExtendedTypeTests
 
         public Optional<Nullable<Optional<string?>>> OptionalNullableOptionalNullableString() =>
             throw new NotImplementedException();
+
+        public Nested? NestedProp { get; set; }
+
+        public class Nested
+        {
+            public string? Value { get; set; }
+        }
     }
 
 #nullable disable

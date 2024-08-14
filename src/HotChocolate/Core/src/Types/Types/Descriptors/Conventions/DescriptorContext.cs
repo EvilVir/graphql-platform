@@ -253,7 +253,7 @@ public sealed partial class DescriptorContext : IDescriptorContext
         TypeDiscoveryHandler[] array;
 
         if (self.ContextData.TryGetValue(TypeDiscoveryHandlers, out var value) &&
-            value is IReadOnlyList<Func<IDescriptorContext, TypeDiscoveryHandler>> { Count: > 0 } h)
+            value is IReadOnlyList<Func<IDescriptorContext, TypeDiscoveryHandler>> { Count: > 0, } h)
         {
             array = new TypeDiscoveryHandler[h.Count + 2];
 
@@ -306,14 +306,4 @@ public sealed partial class DescriptorContext : IDescriptorContext
             contextData ?? new Dictionary<string, object?>(),
             schema ?? new SchemaBuilder.LazySchema(),
             typeInterceptor ?? new AggregateTypeInterceptor());
-
-    private sealed class NoOpStringBuilderPool : ObjectPool<StringBuilder>
-    {
-        public override StringBuilder Get() => new();
-
-        public override void Return(StringBuilder obj)
-        {
-            obj.Clear();
-        }
-    }
 }

@@ -45,7 +45,7 @@ public class QueryableDefaultSortFieldHandler
 
         var lastSelector = lastFieldSelector.Selector;
         Expression nextSelector;
-        if (field.Metadata is ExpressionSortMetadata { Expression: LambdaExpression expression })
+        if (field.Metadata is ExpressionSortMetadata { Expression: LambdaExpression expression, })
         {
             if (expression.Parameters.Count != 1 ||
                 expression.Parameters[0].Type != context.RuntimeTypes.Peek()!.Source)
@@ -116,6 +116,8 @@ public class QueryableDefaultSortFieldHandler
             _replacement = replacement;
             _parameter = parameter;
         }
+
+        protected override Expression VisitExtension(Expression node) => node.CanReduce ? base.VisitExtension(node) : node;
 
         protected override Expression VisitParameter(ParameterExpression node)
         {

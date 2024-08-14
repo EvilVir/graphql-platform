@@ -32,7 +32,7 @@ internal class InterfaceTypeSelectionSetAnalyzer : SelectionSetAnalyzer
         IDocumentAnalyzerContext context,
         SelectionSetVariants selectionSetVariants)
     {
-        Path rootSelectionPath = PathFactory.Instance.New(context.OperationName);
+        Path rootSelectionPath = Path.Root.Append(context.OperationName);
 
         var returnTypeFragment =
             FragmentHelper.CreateFragmentNode(
@@ -92,7 +92,7 @@ internal class InterfaceTypeSelectionSetAnalyzer : SelectionSetAnalyzer
                     context,
                     returnTypeFragment,
                     fieldSelection.Path,
-                    new[] { returnType });
+                    new[] { returnType, });
 
             var @class =
                 FragmentHelper.CreateClass(
@@ -156,7 +156,7 @@ internal class InterfaceTypeSelectionSetAnalyzer : SelectionSetAnalyzer
                     context,
                     returnTypeFragment,
                     fieldSelection.Path,
-                    new[] { returnType });
+                    new[] { returnType, });
 
             var @class =
                 FragmentHelper.CreateClass(

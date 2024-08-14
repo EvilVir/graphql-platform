@@ -33,6 +33,7 @@
     "traversion",
     "Websockets",
     "Newtonsoft",
+    "supergraph",
     "cachable",
     "fricking",
     "runtimes",
@@ -40,7 +41,9 @@
     "cypher",
     "sublicensable",
     "meros",
-    "Structs"
+    "Structs",
+    "reencode",
+    "WunderGraph"
   ],
   "ignoreWords": [
     "Badurina",
@@ -69,7 +72,7 @@
     "Rgba",
     "Postgraphile",
     "Normen",
-    // youtube
+    "typeof",
     "Ufjn",
     "Wguo",
     "Ymgw",
@@ -82,7 +85,11 @@
     "Mihsg",
     "Eciou",
     "cfnm",
-    "UHVQ"
+    "UHVQ",
+    "PKCE",
+    "URQL",
+    "unpublish",
+    "elete"
   ],
   "ignoreRegExpList": [
     "\\((.*)\\)", // Markdown links

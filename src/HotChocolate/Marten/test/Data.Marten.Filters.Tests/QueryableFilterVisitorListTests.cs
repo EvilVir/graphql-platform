@@ -1,58 +1,60 @@
 using CookieCrumble;
+using HotChocolate.Data.Filters;
 using HotChocolate.Execution;
 
-namespace HotChocolate.Data.Filters;
+namespace HotChocolate.Data;
 
-public class QueryableFilterVisitorListTests : IClassFixture<SchemaCache>
+[Collection(SchemaCacheCollectionFixture.DefinitionName)]
+public class QueryableFilterVisitorListTests
 {
     private static readonly Foo[] _fooEntities =
-    {
+    [
         new()
         {
-            FooNested = new List<FooNested>()
-            {
-                new() { Bar = "a" },
-                new() { Bar = "a" },
-                new() { Bar = "a" }
-            }
+            FooNested =
+            [
+                new() { Bar = "a", },
+                new() { Bar = "a", },
+                new() { Bar = "a", },
+            ],
         },
         new()
         {
-            FooNested = new List<FooNested>()
-            {
-                new() { Bar = "c" },
-                new() { Bar = "a" },
-                new() { Bar = "a" }
-            }
+            FooNested =
+            [
+                new() { Bar = "c", },
+                new() { Bar = "a", },
+                new() { Bar = "a", },
+            ],
         },
         new()
         {
-            FooNested = new List<FooNested>()
-            {
-                new() { Bar = "a" },
-                new() { Bar = "d" },
-                new() { Bar = "b" }
-            }
+            FooNested =
+            [
+                new() { Bar = "a", },
+                new() { Bar = "d", },
+                new() { Bar = "b", },
+            ],
         },
         new()
         {
-            FooNested = new List<FooNested>()
-            {
-                new() { Bar = "c" },
-                new() { Bar = "d" },
-                new() { Bar = "b" }
-            }
+            FooNested =
+            [
+                new() { Bar = "c", },
+                new() { Bar = "d", },
+                new() { Bar = "b", },
+            ],
         },
         new()
         {
-            FooNested = new List<FooNested>()
-            {
-                new() { Bar = null! },
-                new() { Bar = "d" },
-                new() { Bar = "b" }
-            }
-        }
-    };
+            FooNested =
+            [
+                new() { Bar = null!, },
+                new() { Bar = "d", },
+                new() { Bar = "b", },
+            ],
+        },
+    ];
 
     private readonly SchemaCache _cache;
 
@@ -87,15 +89,12 @@ public class QueryableFilterVisitorListTests : IClassFixture<SchemaCache>
                 .Create());
 
         // assert
-        await SnapshotExtensions.AddResult(
-                SnapshotExtensions.AddResult(
-                    SnapshotExtensions.AddResult(
-                        Snapshot
-                            .Create(),
-                        res1,
-                        "a"),
-                    res2,
-                    "d"),
+        await Snapshot
+            .Create().AddResult(
+                res1,
+                "a").AddResult(
+                res2,
+                "d").AddResult(
                 res3,
                 "null")
             .MatchAsync();
@@ -141,11 +140,9 @@ public class QueryableFilterVisitorListTests : IClassFixture<SchemaCache>
                 .Create());
 
         // assert
-        await SnapshotExtensions.AddResult(
-                SnapshotExtensions.AddResult(
-                    SnapshotExtensions.AddResult(Snapshot.Create(), res1, "a"),
-                    res2,
-                    "d"),
+        await Snapshot.Create().AddResult(res1, "a").AddResult(
+                res2,
+                "d").AddResult(
                 res3,
                 "null")
             .MatchAsync();
@@ -177,13 +174,11 @@ public class QueryableFilterVisitorListTests : IClassFixture<SchemaCache>
                 .Create());
 
         // assert
-        await SnapshotExtensions.AddResult(
-                SnapshotExtensions.AddResult(
-                    SnapshotExtensions.AddResult(Snapshot.Create(),
-                        res1,
-                        "a"),
-                    res2,
-                    "d"),
+        await Snapshot.Create().AddResult(
+                res1,
+                "a").AddResult(
+                res2,
+                "d").AddResult(
                 res3,
                 "null")
             .MatchAsync();
@@ -209,13 +204,11 @@ public class QueryableFilterVisitorListTests : IClassFixture<SchemaCache>
                 .Create());
 
         // assert
-        await SnapshotExtensions.AddResult(
-                    SnapshotExtensions.AddResult(
-                        Snapshot
-                            .Create(),
-                        res1,
-                        "false"),
-                    res2,
+        await Snapshot
+            .Create().AddResult(
+                res1,
+                "false").AddResult(
+                res2,
                     "true")
             .MatchAsync();
     }
@@ -224,12 +217,12 @@ public class QueryableFilterVisitorListTests : IClassFixture<SchemaCache>
     {
         public Guid Id { get; set; }
 
-        public List<FooNested> FooNested { get; set; } = new();
+        public List<FooNested> FooNested { get; set; } = [];
     }
 
     public class FooSimple
     {
-        public List<string> Bar { get; set; } = new();
+        public List<string> Bar { get; set; } = [];
     }
 
     public class FooNested

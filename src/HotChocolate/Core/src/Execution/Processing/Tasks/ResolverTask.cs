@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate.Execution.Instrumentation;
@@ -13,7 +12,7 @@ internal sealed partial class ResolverTask : IExecutionTask
 {
     private readonly ObjectPool<ResolverTask> _objectPool;
     private readonly MiddlewareContext _context = new();
-    private readonly List<ResolverTask> _taskBuffer = new();
+    private readonly List<ResolverTask> _taskBuffer = [];
     private readonly Dictionary<string, ArgumentValue> _args = new(StringComparer.Ordinal);
     private OperationContext _operationContext = default!;
     private ISelection _selection = default!;

@@ -10,13 +10,13 @@ namespace HotChocolate.Execution.Configuration;
 /// </summary>
 public sealed class RequestExecutorSetup
 {
-    private readonly List<OnConfigureSchemaBuilderAction> _onConfigureSchemaBuilderHooks = new();
-    private readonly List<OnConfigureRequestExecutorOptionsAction> _onConfigureRequestExecutorOptionsHooks = new();
-    private readonly List<RequestCoreMiddleware> _pipeline = new();
-    private readonly List<OnConfigureSchemaServices> _onConfigureSchemaServicesHooks = new();
-    private readonly List<OnRequestExecutorCreatedAction> _onRequestExecutorCreatedHooks = new();
-    private readonly List<OnRequestExecutorEvictedAction> _onRequestExecutorEvictedHooks = new();
-    private readonly List<ITypeModule> _typeModules = new();
+    private readonly List<OnConfigureSchemaBuilderAction> _onConfigureSchemaBuilderHooks = [];
+    private readonly List<OnConfigureRequestExecutorOptionsAction> _onConfigureRequestExecutorOptionsHooks = [];
+    private readonly List<RequestCoreMiddleware> _pipeline = [];
+    private readonly List<OnConfigureSchemaServices> _onConfigureSchemaServicesHooks = [];
+    private readonly List<OnRequestExecutorCreatedAction> _onRequestExecutorCreatedHooks = [];
+    private readonly List<OnRequestExecutorEvictedAction> _onRequestExecutorEvictedHooks = [];
+    private readonly List<ITypeModule> _typeModules = [];
 
     /// <summary>
     /// This allows to specify a schema and short-circuit the schema creation.
@@ -81,6 +81,11 @@ public sealed class RequestExecutorSetup
         => _pipeline;
 
     /// <summary>
+    /// Gets or sets the default pipeline factory.
+    /// </summary>
+    public Action<IList<RequestCoreMiddleware>>? DefaultPipelineFactory { get; set; }
+
+    /// <summary>
     /// Copies the options to the specified other options object.
     /// </summary>
     /// <param name="options">
@@ -98,6 +103,11 @@ public sealed class RequestExecutorSetup
         options._onRequestExecutorCreatedHooks.AddRange(_onRequestExecutorCreatedHooks);
         options._onRequestExecutorEvictedHooks.AddRange(_onRequestExecutorEvictedHooks);
         options._typeModules.AddRange(_typeModules);
+
+        if(DefaultPipelineFactory is not null)
+        {
+            options.DefaultPipelineFactory = DefaultPipelineFactory;
+        }
     }
 }
 

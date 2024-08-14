@@ -190,11 +190,11 @@ public class ErrorBuilderTests
         // act
         var error = ErrorBuilder.New()
             .SetMessage("bar")
-            .SetPath(new List<object> { "foo" })
+            .SetPath(new List<object> { "foo", })
             .Build();
 
         // assert
-        Assert.Equal("/foo", error.Path.Print());
+        Assert.Equal("/foo", error.Path?.Print());
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class ErrorBuilderTests
             .Build();
 
         // assert
-        Assert.Equal("/foo", error.Path.Print());
+        Assert.Equal("/foo", error.Path?.Print());
     }
 
     [Fact]

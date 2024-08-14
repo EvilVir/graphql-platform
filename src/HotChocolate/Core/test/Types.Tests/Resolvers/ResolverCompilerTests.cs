@@ -714,7 +714,7 @@ public class ResolverCompilerTests
         // arrange
         var type = typeof(Resolvers);
         MemberInfo member = type.GetMethod(nameof(Resolvers.GetGlobalStateWithKey))!;
-        var contextData = new Dictionary<string, object?> { { "foo", "bar" } };
+        var contextData = new Dictionary<string, object?> { { "foo", "bar" }, };
 
         // act
         var compiler = new DefaultResolverCompiler(_empty);
@@ -734,7 +734,7 @@ public class ResolverCompilerTests
         // arrange
         var type = typeof(Resolvers);
         MemberInfo member = type.GetMethod(nameof(Resolvers.GetGlobalState))!;
-        var contextData = new Dictionary<string, object?> { { "foo", "bar" } };
+        var contextData = new Dictionary<string, object?> { { "foo", "bar" }, };
 
         // act
         var compiler = new DefaultResolverCompiler(_empty);
@@ -879,7 +879,7 @@ public class ResolverCompilerTests
         // arrange
         var type = typeof(Resolvers);
         MemberInfo member = type.GetMethod(nameof(Resolvers.GetScopedStateWithKey))!;
-        var contextData = new Dictionary<string, object?> { { "foo", "bar" } }
+        var contextData = new Dictionary<string, object?> { { "foo", "bar" }, }
             .ToImmutableDictionary();
 
         // act
@@ -901,7 +901,7 @@ public class ResolverCompilerTests
         var type = typeof(Resolvers);
         MemberInfo member = type.GetMethod(nameof(Resolvers.GetScopedState))!;
 
-        var contextData = new Dictionary<string, object?>{ { "foo", "bar" } }
+        var contextData = new Dictionary<string, object?>{ { "foo", "bar" }, }
             .ToImmutableDictionary();
 
         // act
@@ -1061,7 +1061,7 @@ public class ResolverCompilerTests
         // arrange
         var type = typeof(Resolvers);
         MemberInfo member = type.GetMethod(nameof(Resolvers.GetLocalStateWithKey))!;
-        var contextData = new Dictionary<string, object?> { { "foo", "bar" } }
+        var contextData = new Dictionary<string, object?> { { "foo", "bar" }, }
             .ToImmutableDictionary();
 
         // act
@@ -1082,7 +1082,7 @@ public class ResolverCompilerTests
         // arrange
         var type = typeof(Resolvers);
         MemberInfo member = type.GetMethod(nameof(Resolvers.GetLocalState))!;
-        var contextData = new Dictionary<string, object?> { { "foo", "bar" } }
+        var contextData = new Dictionary<string, object?> { { "foo", "bar" }, }
             .ToImmutableDictionary();
 
         // act
@@ -1294,7 +1294,7 @@ public class ResolverCompilerTests
         // assert
         var context = new Mock<IResolverContext>();
         context.Setup(t => t.Parent<Resolvers>()).Returns(new Resolvers());
-        context.SetupGet(t => t.Path).Returns(PathFactory.Instance.New("FOO"));
+        context.SetupGet(t => t.Path).Returns(Path.Root.Append("FOO"));
 
         var result = (bool)(await resolver(context.Object))!;
         Assert.True(result);
@@ -1527,9 +1527,9 @@ public class ResolverCompilerTests
         }
     }
 
-    public class Entity { }
+    public class Entity;
 
-    public class MyService { }
+    public class MyService;
 
     public class QueryWithScopedExpressionBuilder
     {

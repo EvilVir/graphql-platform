@@ -28,7 +28,7 @@ namespace StrawberryShake.CodeGeneration.CSharp;
 public static class CSharpGenerator
 {
     private static readonly ICSharpSyntaxGenerator[] _generators =
-    {
+    [
         new ClientGenerator(), new ClientInterfaceGenerator(), new EntityTypeGenerator(),
         new EntityIdFactoryGenerator(), new DependencyInjectionGenerator(),
         new TransportProfileEnumGenerator(), new InputValueFormatterGenerator(),
@@ -39,8 +39,8 @@ public static class CSharpGenerator
         new ResultTypeGenerator(), new StoreAccessorGenerator(), new NoStoreAccessorGenerator(),
         new InputTypeGenerator(), new InputTypeStateInterfaceGenerator(),
         new ResultInterfaceGenerator(), new DataTypeGenerator(), new RazorQueryGenerator(),
-        new RazorSubscriptionGenerator()
-    };
+        new RazorSubscriptionGenerator(),
+    ];
 
     public static async Task<CSharpGeneratorResult> GenerateAsync(
         IEnumerable<string> fileNames,
@@ -312,6 +312,7 @@ public static class CSharpGenerator
         CSharpGeneratorSettings settings)
     {
         var generatorSettings = new CSharpSyntaxGeneratorSettings(
+            settings.AccessModifier,
             settings.NoStore,
             settings.InputRecords,
             settings.EntityRecords,

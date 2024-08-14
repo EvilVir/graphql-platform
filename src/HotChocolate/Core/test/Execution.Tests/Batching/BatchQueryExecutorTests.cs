@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using CookieCrumble;
 using Microsoft.Extensions.DependencyInjection;
 using HotChocolate.StarWars;
 using HotChocolate.Tests;
 using HotChocolate.Types;
-using Snapshooter.Xunit;
-using Xunit;
 using static HotChocolate.Tests.TestHelper;
+using Snapshot = Snapshooter.Xunit.Snapshot;
 
 namespace HotChocolate.Execution.Batching;
 
@@ -54,7 +51,7 @@ public class BatchQueryExecutorTests
         await batchResult.MatchSnapshotAsync();
     }
 
-    [Fact]
+    [LocalFact]
     public async Task ExecuteExportScalarList()
     {
         // arrange
@@ -209,11 +206,11 @@ public class BatchQueryExecutorTests
 
                     if (list is null)
                     {
-                        return new List<string>
-                        {
+                        return
+                        [
                             "123",
-                            "456"
-                        };
+                            "456",
+                        ];
                     }
 
                     list.Add("789");
@@ -270,13 +267,14 @@ public class BatchQueryExecutorTests
 
                 if (list is null)
                 {
-                    return new List<object>
-                    {
+                    return
+                    [
                         new Dictionary<string, object>
                         {
-                            { "bar" , "123" }
-                        }
-                    };
+                            { "bar", "123" },
+                        },
+
+                    ];
                 }
 
                 list.Add(new Dictionary<string, object>
@@ -353,7 +351,7 @@ public class BatchQueryExecutorTests
                     @"query foo1($b: [String]) {
                             foo(bar: $b) @export(as: ""b"")
                         }")
-                .AddVariableValue("b", new[] { "123" })
+                .AddVariableValue("b", new[] { "123", })
                 .Create(),
             QueryRequestBuilder.New()
                 .SetQuery(
@@ -404,7 +402,7 @@ public class BatchQueryExecutorTests
                     @"query foo1($b1: [String]) {
                             foo(bar: $b1) @export(as: ""b2"")
                         }")
-                .AddVariableValue("b1", new[] { "123" })
+                .AddVariableValue("b1", new[] { "123", })
                 .Create(),
             QueryRequestBuilder.New()
                 .SetQuery(

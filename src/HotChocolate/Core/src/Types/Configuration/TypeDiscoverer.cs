@@ -12,9 +12,9 @@ namespace HotChocolate.Configuration;
 
 internal sealed class TypeDiscoverer
 {
-    private readonly List<TypeReference> _unregistered = new();
-    private readonly List<ISchemaError> _errors = new();
-    private readonly List<TypeReference> _resolved = new();
+    private readonly List<TypeReference> _unregistered = [];
+    private readonly List<ISchemaError> _errors = [];
+    private readonly List<TypeReference> _resolved = [];
     private readonly IDescriptorContext _context;
     private readonly TypeRegistry _typeRegistry;
     private readonly TypeRegistrar _typeRegistrar;
@@ -68,25 +68,27 @@ internal sealed class TypeDiscoverer
 
         _typeRegistrar = new TypeRegistrar(context, typeRegistry, typeLookup, interceptor);
 
-        _handlers = new ITypeRegistrarHandler[]
-        {
+        _handlers =
+        [
             new ExtendedTypeReferenceHandler(context.TypeInspector),
             new SchemaTypeReferenceHandler(),
             new SyntaxTypeReferenceHandler(context.TypeInspector),
             new FactoryTypeReferenceHandler(context),
             new DependantFactoryTypeReferenceHandler(context),
-            new ExtendedTypeDirectiveReferenceHandler(context.TypeInspector)
-        };
+            new ExtendedTypeDirectiveReferenceHandler(context.TypeInspector),
+        ];
 
         _interceptor = interceptor;
     }
+
+    public TypeRegistrar Registrar => _typeRegistrar;
 
     public IReadOnlyList<ISchemaError> DiscoverTypes()
     {
         const int max = 1000;
         var processed = new HashSet<TypeReference>();
 
-DISCOVER:
+        DISCOVER:
         var tries = 0;
         var resolved = false;
 
@@ -104,13 +106,13 @@ DISCOVER:
             }
             catch (Exception ex)
             {
-                _errors.Add(SchemaErrorBuilder.New()
-                    .SetMessage(ex.Message)
-                    .SetException(ex)
-                    .Build());
+                _errors.Add(
+                    SchemaErrorBuilder.New()
+                        .SetMessage(ex.Message)
+                        .SetException(ex)
+                        .Build());
             }
-        }
-        while (resolved && tries < max && _errors.Count == 0);
+        } while (resolved && tries < max && _errors.Count == 0);
 
         if (_errors.Count == 0 && _unregistered.Count == 0)
         {
@@ -145,7 +147,8 @@ DISCOVER:
         {
             foreach (var typeRef in _unregistered)
             {
-                var index = (int)typeRef.Kind;
+                var index = (int) typeRef.Kind;
+
                 if (_handlers.Length > index)
                 {
                     _handlers[index].Handle(_typeRegistrar, typeRef);
@@ -163,6 +166,18 @@ DISCOVER:
 
         foreach (var unresolvedTypeRef in _typeRegistrar.Unresolved)
         {
+            // first we will check if we have a type binding for the unresolved type.
+            // type bindings are types that will be registered instead of the actual discovered type.
+            if (unresolvedTypeRef is ExtendedTypeReference extendedTypeRef &&
+                _typeRegistry.RuntimeTypeRefs.TryGetValue(extendedTypeRef, out var typeReference))
+            {
+                inferred = true;
+                _unregistered.Add(typeReference);
+                _resolved.Add(unresolvedTypeRef);
+                continue;
+            }
+
+            // if we do not have a type binding or if we have a directive we will try to infer the type.
             if (unresolvedTypeRef is ExtendedTypeReference or ExtendedTypeDirectiveReference &&
                 _context.TryInferSchemaType(unresolvedTypeRef, out var schemaTypeRefs))
             {
@@ -215,7 +230,7 @@ DISCOVER:
                         .Any(r => r.Equals(unresolvedReference))).ToList();
 
                 var builder =
-                     SchemaErrorBuilder.New()
+                    SchemaErrorBuilder.New()
                         .SetMessage(
                             TypeResources.TypeRegistrar_TypesInconsistent,
                             unresolvedReference)

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using GreenDonut;
-using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Execution.Caching;
 using HotChocolate.Execution.Configuration;
@@ -66,18 +65,7 @@ internal static class InternalServiceCollectionExtensions
                 sp.GetRequiredService<ObjectPool<ResolverTask>>()));
         return services;
     }
-
-    internal static IServiceCollection TryAddPathSegmentPool(
-        this IServiceCollection services,
-        int maximumRetained = 256)
-    {
-        services.TryAddSingleton<ObjectPool<PathSegmentBuffer<IndexerPathSegment>>>(
-            _ => new IndexerPathSegmentPool(maximumRetained));
-        services.TryAddSingleton<ObjectPool<PathSegmentBuffer<NamePathSegment>>>(
-            _ => new NamePathSegmentPool(maximumRetained));
-        return services;
-    }
-
+    
     internal static IServiceCollection TryAddOperationCompilerPool(
         this IServiceCollection services)
     {
@@ -241,7 +229,7 @@ internal static class InternalServiceCollectionExtensions
         this IServiceCollection services)
         where T : class, IParameterExpressionBuilder
     {
-        if (services.All(t => t.ImplementationType != typeof(T)))
+        if (!services.IsImplementationTypeRegistered<T>())
         {
             services.AddSingleton<IParameterExpressionBuilder, T>();
         }
